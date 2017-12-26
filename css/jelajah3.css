@@ -16,6 +16,13 @@ body {
     user-select: none;
 }
 
+.layerwindowclose {
+    position: absolute;
+    right: -2px;
+    top: 2px;
+    cursor: pointer;
+}
+
 #jelajah {
     position: absolute;
     top: 0;
@@ -33,6 +40,30 @@ body {
     right: 0;
 }
 
+#sortableul {
+    display: none;
+}
+
+.daftarlayer {
+    font-size: unset;
+    font-weight: 800;
+    padding-left: 10px;
+    display: none;
+    line-height: 2.5;
+}
+
+.addlayerbtn {
+    height: 35px;
+    /* padding-right: 10px; */
+    margin-right: 10px;
+    /* padding-top: 5px !important; */
+    width: 50px;
+}
+
+.addlayerbtni {
+    margin-left: -9px;
+}
+
 .basemapbox {
     background-color: red;
     height: 30px;
@@ -45,13 +76,26 @@ body {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-.basemap {
+.basemapbtn {
     background-color: yellow;
     height: 20px;
     position: absolute;
     width: 92px;
     top: 5px;
     left: 5px;
+    cursor: pointer;
+    font-size: smaller;
+    padding-left: 5px;
+}
+
+.basemapbtn:hover {
+    background-color: darkolivegreen;
+}
+
+.basemapcard {
+    width: 125px;
+    padding-left: 5px;
+    font-size: large;
     cursor: pointer;
 }
 
@@ -63,6 +107,12 @@ body {
     top: 5px;
     right: 5px;
     cursor: pointer;
+    font-size: smaller;
+    padding-left: 5px;
+}
+
+.photos:hover {
+    background-color: darkolivegreen;
 }
 
 .basemapmodal {
@@ -75,6 +125,9 @@ body {
     -webkit-transition: height 0.5s;
     transition: height 0.5s;
     z-index: 1200;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .photosmodal {
@@ -106,15 +159,23 @@ body {
 
 .leftsidebar {
     position: absolute;
+    /* padding: 5px; */
+    padding-top: 10px;
     top: 0;
     bottom: 0;
     left: 0;
     width: 0px;
-    background-color: lightsalmon;
+    background-color: white;
     -webkit-transition: width 0.5s;
     transition: width 0.5s;
     box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     z-index: 6;
+}
+
+.layer_name {
+    max-width: 180px;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .leftsidebarburger {
@@ -150,7 +211,7 @@ body {
 }
 
 .geocoding_wrap {
-    background-color: lightcyan;
+    background-color: #1d6f73c7;
     position: absolute;
     top: 0;
     bottom: 0 !important;
@@ -162,19 +223,25 @@ body {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     -webkit-transition: left 0.5s;
     transition: left 0.5s;
+    /* display: none; */
 }
 
 #hasil_cari_geocoding {
     position: absolute;
     top: 110px;
     bottom: 0px;
-    padding: 25px;
+    /* padding: 25px; */
     font-size: smaller;
-    opacity: 0.8;
+    opacity: 0.9;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* display: none; */
 }
 
 #layerwindow {
     position: absolute;
+    top: 25%;
+    left: 25%;
     z-index: 12;
     background-color: #f1f1f1;
     /* border: 1px solid #d3d3d3; */
@@ -182,6 +249,7 @@ body {
     width: 400px;
     /* height: 500px; */
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    display: none;
 }
 
 #layerwindowheader {
@@ -330,6 +398,11 @@ body {
     z-index: 997;
 }*/
 
+.input-field2 {
+    position: relative;
+    /* margin-top: 1rem; */
+}
+
 body.dragging,
 body.dragging * {
     cursor: move !important;
@@ -453,8 +526,9 @@ i.right {
 
 .avatar {
     /* position: relative; */
-    min-height: 90px;
+    min-height: 64px;
     padding-left: 72px;
+    /* padding-bottom: 0px; */
     position: relative;
     border-top: 1px solid #ddd;
     border-right: 1px solid #ddd;
@@ -476,7 +550,7 @@ li.collection-item:hover {
 .piccari {
     position: relative;
     right: 50px;
-    top: 28px;
+    top: 16px;
 }
 
 .title {
@@ -625,6 +699,7 @@ input[type=range]+.thumb.active .value {
     /* position: relative; */
     padding: 15px !important;
     padding-bottom: 5px !important;
+    font-size: x-small;
 }
 
 .dropzone {

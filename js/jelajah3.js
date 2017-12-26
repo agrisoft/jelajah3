@@ -34,6 +34,9 @@ var measureTooltip;
 var continuePolygonMsg = 'Klik untuk mulai menggambar area';
 var continueLineMsg = 'Klik untuk mulai menggambar garis';
 var listener;
+var box_ukur_visible = false;
+var start_measure = false;
+var listgeocoding = false;
 
 // Functions
 function getSimpulInfo() {
@@ -77,6 +80,9 @@ function extToMerc(extent) {
 
 function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, max_y, layer_nativename) {
     // rndlayerid = randomNumber()
+    // if (_proxy) {
+    //     serviceUrl = _proxy + encodeURIComponent(serviceUrl);
+    // }
     window.layer_count = layer_count + 1;
     rndlayerid = layer_count;
     layer_source[rndlayerid] = new ol.source.TileWMS({
@@ -95,8 +101,8 @@ function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, ma
     map.addLayer(layer[rndlayerid]);
     console.log(rndlayerid, layermark, layer[rndlayerid].get('title'))
     setTimeout(() => {
-        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
-        $('#sortableul').append(listappend);
+        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i><span class='layer_name'>" + layer[rndlayerid].get('title') + "</span></div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+        $('#sortableul').prepend(listappend);
         info_layer.push(rndlayerid);
         extent = layer[rndlayerid].getExtent();
         map.getView().fit(extent, map.getSize());
@@ -131,10 +137,10 @@ function olAddDEFLayer(layername, layermark, layer_nativename, aktif, min_x, min
         console.log(rndlayerid, layermark, layer[rndlayerid].get('title'))
         if (aktif) {
             listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
-            $('#sortableul').append(listappend);
+            $('#sortableul').prepend(listappend);
         } else {
             listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box_outline_blank</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
-            $('#sortableul').append(listappend);
+            $('#sortableul').prepend(listappend);
             layer[rndlayerid].setVisible(false);
         }
         info_layer.push(rndlayerid);
@@ -171,7 +177,7 @@ function olAddRESTLayer(serviceUrl, id) {
     map.addLayer(layer[rndlayerid]);
     setTimeout(() => {
         listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
-        $('#sortableul').append(listappend);
+        $('#sortableul').prepend(listappend);
         info_layer.push(rndlayerid);
         extent = layer[rndlayerid].getExtent();
         map.getView().fit(extent, map.getSize());
@@ -316,7 +322,7 @@ function loadShpZip(files, rndid) {
             layer[rndlayerid].setZIndex(layer.length);
             layer[rndlayerid].setStyle(vector_style);
             listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
-            $('#sortableul').append(listappend);
+            $('#sortableul').prepend(listappend);
         }, 2000);
         //   delete layer;
     });
@@ -362,7 +368,7 @@ function loadGpx(files, rndid) {
             layer[rndlayerid].setZIndex(layer.length);
             layer[rndlayerid].setStyle(vector_style)
             listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
-            $('#sortableul').append(listappend);
+            $('#sortableul').prepend(listappend);
         }, 2000);
     };
 
@@ -416,7 +422,7 @@ function loadCSV(files, rndid) {
                 extent = layer[layeritem].getSource().getExtent();
                 map.getView().fit(extent, map.getSize());
                 listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
-                $('#sortableul').append(listappend);
+                $('#sortableul').prepend(listappend);
             }, 2000);
         });
     }
@@ -601,6 +607,58 @@ function switchbaselayer(basetitle) {
     }, 500);
 }
 
+function getGeocoding() {
+    $.ajax({
+        url: "http://nominatim.openstreetmap.org/search?format=jsonv2&polygon_geojson=1&q=" + $("#cari_geocoding_input").val(),
+        async: false,
+        success: function(data) {
+            window.hasil_cari = data;
+            // console.log(data);
+            $('#list_hasil').empty();
+            for (i = 0; i < data.length; i++) {
+                lihtml = "<li id='" + data[i].place_id + "' class='collection-item avatar'><i id='" + data[i].place_id + "' class='material-icons circle green piccari'>add_location</i><div id='" + data[i].place_id + "' class='title'>" + data[i].display_name + "</div></li>";
+                $('#list_hasil').append(lihtml);
+                console.log(data[i]);
+            }
+        }
+    });
+}
+
+function getBasemaps() {
+    $.ajax({
+        url: palapa_api_url + "basemaps/list",
+        async: false,
+        success: function(data) {
+            window.basemaps = JSON.parse(data);
+            for (i = 0; i < basemaps.length; i++) {
+                basename = basemaps[i].name.replace(' ', '_').toLowerCase();
+                if (basemaps[i].type == 'TMS') {
+                    window.basemap[basename] = new ol.layer.Tile({
+                        title: basemaps[i].name,
+                        visible: false,
+                        preload: Infinity,
+                        source: new ol.source.XYZ({
+                            url: basemaps[i].url
+                        }),
+                        zIndex: -10
+                    });
+                } else {
+                    window.basemap[basename] = new ol.layer.Tile({
+                        title: basemaps[i].name,
+                        visible: false,
+                        preload: Infinity,
+                        source: new ol.source.TileWMS({
+                            url: basemaps[i].url,
+                            params: { LAYERS: basemaps[i].params, VERSION: '1.1.1' }
+                        }),
+                        zIndex: -10
+                    });
+                }
+            }
+        }
+    })
+}
+
 // Custom control
 
 // Init map
@@ -710,22 +768,126 @@ var map = new ol.Map({
 
 map.getView().fit(merc_extent, map.getSize());
 
+map.on('singleclick', function(evt) {
+    var coordinate = evt.coordinate;
+    var hdms = ol.coordinate.toStringHDMS(coordinate);
+    console.log()
+
+    if (!start_measure) {
+        map.forEachLayerAtPixel(evt.pixel, function(layer) {
+            console.warn('CALLBACK')
+        }, this, function(layer) {
+            console.log('FILTER')
+            var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+                return feature;
+            });
+            console.log(layer, feature);
+            if (feature) {
+                return true
+            } else {
+                return false
+            }
+        })
+
+        var layerWithWmsSource = map.forEachLayerAtPixel(evt.pixel,
+            function(layer) {
+                // return only layers with ol.source.TileWMS
+                var source = layer.getSource();
+                if (source instanceof ol.source.TileWMS) {
+                    return layer;
+                }
+            });
+        if (layerWithWmsSource) {
+            $('#popup-content').empty();
+            getInfo(evt, layerWithWmsSource);
+            overlay.setPosition(coordinate);
+        }
+
+        // Attempt to find a feature in one of the visible vector layers
+        var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+            return feature;
+        });
+
+        var content_html;
+        if (feature) {
+            console.log(feature)
+            $('#popup-content').empty();
+            fkeys = feature.getKeys();
+            var tabel_info_head = "<table class='highlight'><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody id='isiinfo'></tbody></table>";
+            $('#popup-content').append(tabel_info_head)
+            for (i = 0; i < fkeys.length; i++) {
+                if (fkeys[i] != 'geometry') {
+                    // content_html = "<p>" + fkeys[i] + ": " + feature.get(fkeys[i]) + "</p>";
+                    // $('#popup-content').append(content_html)
+                    content_html = "<tr><td>" + fkeys[i] + "</td><td>" + feature.get(fkeys[i]) + "</td></tr>";
+                    $('#isiinfo').append(content_html)
+                }
+            }
+            // $.each(feature.S, function(index, value) {
+            //     console.log(index, value);
+            //     content_html = "<p>" + index + ": " + value + "</p>";
+            //     $('#popup-content').append(content_html)
+            // });
+            // var content_html = '<p>You clicked here:</p><code>' + hdms + '</code>';
+            $('#popup-content').append(content_html)
+            overlay.setPosition(coordinate);
+        }
+    }
+});
+
+function getInfo(evt, layer) {
+    var resolution = map.getView().getResolution();
+    var url = layer.getSource().getGetFeatureInfoUrl(evt.coordinate,
+        resolution, 'EPSG:3857', { 'INFO_FORMAT': 'application/json' });
+    if (url) {
+        console.log(url)
+        var infos;
+        var tabel_info_head = "<table class='highlight'><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody id='isiinfo'></tbody></table>";
+        $('#popup-content').append(tabel_info_head)
+
+        function getInnerInfo() {
+            $.ajax({
+                url: url,
+                async: false,
+                success: function(data) {
+                    infos = data.features[0].properties;
+                    for (var key in infos) {
+                        var value = infos[key];
+                        content_html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>";
+                        $('#isiinfo').append(content_html)
+                    }
+                }
+            });
+        }
+        getInnerInfo();
+        // $.get(url, function(data) {
+        //     console.log(data)
+        //     infos = data.features[0].properties;
+        //     for (var key in infos) {
+        //         var value = infos[key];
+        //         content_html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>";
+        //         $('#isiinfo').append(content_html)
+        //     }
+        // })
+    }
+}
+
 // Init UI Controls
 
-var basemapbox = "<div class='basemapbox'><span class='basemap'></span><span class='photos'></span></div>";
-var basemapmodal = "<div class='basemapmodal'></div>";
+var basemapbox = "<div class='basemapbox'><span class='basemapbtn'>Basemap</span><span class='photos'>Foto</span></div>";
+var basemapmodal = "<div class='basemapmodal'><div id='base_osm'><div class='card basemapcard'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>OSM</span></div></div></div><div id='base_rbi'><div class='card basemapcard'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>RBI</span></div></div></div><div id='base_esri'><div class='card basemapcard'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>ESRI</span></div></div></div><div id='base_rbibaru'><div class='card basemapcard'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>RBI OS</span></div></div></div></div>";
 var photosmodal = "<div class='photosmodal'></div>";
 var cari_geocoding = "<div class='cari_geocoding'></div>";
 var cari_geocoding_input = "<input id='cari_geocoding_input' type='text' class='validate cari_geocoding_input'>";
 var cari_geocoding_submit = "<i class='material-icons cari_geocoding_submit'>search</i><i class='material-icons cari_geocoding_tutup'>close</i>";
-var hasil_cari_geocoding = "<div class='row geocoding_wrap'><div id='hasil_cari_geocoding' class='col s12 grey'></div>"
+var hasil_cari_geocoding = "<div class='row geocoding_wrap'><div id='hasil_cari_geocoding' class='col s12 white'><ul id='list_hasil'></ul></div>"
 var leftsidebarburger = "<i class='material-icons leftsidebarburger'>menu</i>"
-var leftsidebar = "<div class='leftsidebar'></div>";
-var layerwindow = "<div id='layerwindow'><div id='layerwindowheader'>Tambah Layer</div><div id='layerwindowcontent'><ul id='addlayerstab' class='tabs'><li class='tab col s3'><a class='active' href='#locallayer'>Dataset</a></li><li class='tab col s3'><a href='#simpul'>Simpul</a></li><li class='tab col s3'><a href='#localfiles'>File</a></li><li class='tab col s3'><a href='#extlayer'>URL</a></li></ul><div id='tabsubheader'></div><div id='locallayer' class='col s12 grey lighten-4 addlayercontentpad'></div><div id='extlayer' class='col s12 red addlayercontentpad'>Test 2</div><div id='localfiles' class='col s12 grey lighten-4 addlayercontentpad'><div id='dropzone'></div></div><div id='simpul' class='col s12 yellow addlayercontentpad'><div class='col s2' id='ext_srv_t'></div><div class='col s12'> <ul id='ext_wms_item_list' class='collection'></ul></div></div></div></div>";
+var leftsidebar = "<div class='leftsidebar'><span class='daftarlayer'>Daftar Layer</span><a class='right waves-effect waves-light btn addlayerbtn tooltipped' data-position='right' data-delay='50' data-tooltip='Tambah Layer' id='addlayerbtn'><i class='material-icons left addlayerbtni'>collections</i></a><ul id='sortableul' class='collapsible' data-collapsible='expandable'></ul></div>";
+var layerwindow = "<div id='layerwindow'><div id='layerwindowheader'>Tambah Layer<i class='material-icons layerwindowclose right'>close</i></div><div id='layerwindowcontent'><ul id='addlayerstab' class='tabs'><li class='tab col s3'><a class='active' href='#locallayer'>Dataset</a></li><li class='tab col s3'><a href='#simpul'>Simpul</a></li><li class='tab col s3'><a href='#localfiles'>File</a></li><li class='tab col s3'><a href='#extlayer'>URL</a></li></ul><div id='tabsubheader'></div><div id='locallayer' class='col s12 grey lighten-4 addlayercontentpad'></div><div id='extlayer' class='col s12 red addlayercontentpad'>TEST<div class='col s12'></div></div><div id='localfiles' class='col s12 grey lighten-4 addlayercontentpad'><div id='dropzone'></div></div><div id='simpul' class='col s12 white addlayercontentpad'><div class='col s2' id='ext_srv_t'></div><div class='col s2' id='ext_srv_url' style='display:none;'></div><div class='col s12'> <ul id='ext_wms_item_list' class='collection'></ul></div></div></div></div></div></div></div></div>";
 var layerwindow_lokal = "<ul class='collapsible' data-collapsible='expandable' id='layerwindow_lokal'></ul>";
 var tablayerlokal = "<div class='input-field col s12 textinputnolab'><input placeholder='Cari layer ...' id='layername_lokal' type='text' class='validate tabsub' style='margin:0px;'/></div>";
 var tablayersimpul = "<div class='input-field col s12 textinputnolab'><select id='ext_srv_type'><option disable='' selected='selected' value='WMS'>Pilih Servis</option></select></div>";
-var tablayerurl = "<div class='input-field col s12 textinputnolab'><input placeholder='Cari layer ...' id='layername_url' type='text' class='validate tabsub' style='margin:0px;'/></div>";
+var tablayerurl = "<div class='input-field col s12 textinputnolab'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s12'><input placeholder='URL servis' class='validate' id='url_servis' type='text' /></div></div><div class='row'><div class='input-field col s8'><select id='srv_type'><option disable='' selected='selected' value='WMS'>OGC WMS</option><option value='ESRI'>ESRI REST</option></select></div><div class='col s4'><a class='waves-effect waves-light btn' id='getwmslist'>Ambil List</a></div>";
 
 $("#jelajah").append(basemapbox);
 $("#jelajah").append(basemapmodal);
@@ -738,7 +900,8 @@ $("#jelajah").append(leftsidebar);
 $("#jelajah").append(layerwindow);
 $("#locallayer").append(layerwindow_lokal);
 $("#tabsubheader").append(tablayerlokal);
-$("#dropzone").append("<div id='dropinfo'>Klik di sini, atau Taruh berkas ZIP (Shapefile), GPX, atau CSV.</div>");
+// $("#jelajah").append(hasil_cari_geocoding);
+$("#dropzone").append("<div id='dropinfo'>Klik di sini, atau Taruh berkas ZIP (Shapefile), GPX, atau CSV.<p><strong>Perhatikan:</strong></p><p>Shapefile, minimal terdiri dari set .shp .shx .dbf; tidak memiliki dimensi Z; proyeksi EPSG:4326</p><p>Memuat shapefile dengan geometri kompleks tidak dianjurkan</p></div>");
 
 // UI Function
 
@@ -794,7 +957,9 @@ function basemapstoggle() {
         $(".ol-zoom").css('bottom', '9.5em');
         $(".basemapbox").css('bottom', '100px');
         $(".basemapmodal").css('height', '100px');
+        $(".photosmodal").css('height', '0px');
         basemapmodal_stat = true;
+        if (photosmodal_stat) { photosmodal_stat = false; }
     } else {
         $(".ol-zoom").css('bottom', '5em');
         $(".basemapbox").css('bottom', '35px')
@@ -808,7 +973,11 @@ function photostoggle() {
         $(".ol-zoom").css('bottom', '9.5em');
         $(".basemapbox").css('bottom', '100px');
         $(".photosmodal").css('height', '100px');
+        $(".basemapmodal").css('height', '0px');
         photosmodal_stat = true;
+        if (basemapmodal_stat) {
+            basemapmodal_stat = false;
+        }
     } else {
         $(".ol-zoom").css('bottom', '5em');
         $(".basemapbox").css('bottom', '35px')
@@ -822,13 +991,17 @@ function leftsidebartoggle() {
         $(".cari_geocoding").css('left', '325px');
         $(".leftsidebar").css('width', '300px');
         $(".geocoding_wrap").css('left', '300px')
-        $("i cari_geocoding_tutup").css('display', 'unset')
+        $("i cari_geocoding_tutup").css('display', 'unset');
+        $("#sortableul").show();
+        $(".daftarlayer").show();
         leftsidebar_stat = true;
     } else {
         $(".cari_geocoding").css('left', '25px');
         $(".leftsidebar").css('width', '0px');
         $(".geocoding_wrap").css('left', '0px')
-        $("i cari_geocoding_tutup").css('display', 'none')
+        $("i cari_geocoding_tutup").css('display', 'none');
+        $("#sortableul").hide();
+        $(".daftarlayer").hide();
         leftsidebar_stat = false;
     }
 }
@@ -868,7 +1041,7 @@ function dragElement(elmnt) {
     }
 }
 
-$(".basemap").on('click', function() {
+$(".basemapbtn").on('click', function() {
     basemapstoggle();
 })
 
@@ -885,15 +1058,105 @@ $("#addlayerstab a").on('click', function(e) {
     layertabswitch(seltab)
 })
 
+$("#addlayerbtn").on('click', function() {
+    $("#layerwindow").show();
+})
+
+$(".layerwindowclose").on('click', function() {
+    $("#layerwindow").hide();
+})
+
 $(".cari_geocoding_submit").on('click', function() {
+    $(".geocoding_wrap").remove();
     $("#hasil_cari_geocoding").remove();
     $("#jelajah").append(hasil_cari_geocoding);
+    if (leftsidebar_stat) {
+        $(".geocoding_wrap").css('left', '300px')
+    } else {
+        $(".geocoding_wrap").css('left', '0px')
+    }
+    if (listgeocoding) {
+        getGeocoding();
+        setTimeout(() => {
+            list_hasil_event()
+
+        }, 500);
+    } else {
+        $(".cari_geocoding_tutup").show();
+        $(".cari_geocoding_submit").css('right', '32px');
+        getGeocoding();
+        setTimeout(() => {
+            list_hasil_event()
+
+        }, 500);
+        window.listgeocoding = true;
+    }
+
 })
+
+$(".cari_geocoding_tutup").on('click', function() {
+    $(".geocoding_wrap").remove();
+    // $("#jelajah").append(hasil_cari_geocoding);
+    if (listgeocoding) {
+        $(".cari_geocoding_tutup").hide();
+        $(".cari_geocoding_submit").css('right', '0px');
+        window.listgeocoding = false;
+    } else {
+        $(".cari_geocoding_tutup").show();
+        $(".cari_geocoding_submit").css('right', '32px');
+        window.listgeocoding = true;
+    }
+
+})
+
+$("#hasil_cari_geocoding").on('click', function() {
+    console.log('CLICK');
+})
+
+$(".basemapmodal").on('click', function(e) {
+    base_id = $(e.target).siblings().text();
+    console.log($(e.target).siblings().text());
+    switchbaselayer(base_id);
+})
+
+function list_hasil_event() {
+    $("#list_hasil").on('click', function(e) {
+        p_id = $(e.target).attr('id');
+        console.log($(e.target).attr('id'));
+        for (i = 0; i < hasil_cari.length; i++) {
+            if (hasil_cari[i].place_id == String(p_id)) {
+                feature = new ol.format.GeoJSON().readFeatures(hasil_cari[i].geojson, {
+                    featureProjection: 'EPSG:3857'
+                });
+
+                rndlayerid = randomNumber();
+                layer[rndlayerid] = new ol.layer.Vector({
+                    title: hasil_cari[i].display_name,
+                    source: new ol.source.Vector({
+                        tipe: 'cari',
+                        features: feature,
+                        params: {
+                            'LAYERS': String(hasil_cari[i].display_name)
+                        }
+                    })
+                });
+
+                map.addLayer(layer[rndlayerid]);
+                extent = layer[rndlayerid].getSource().getExtent();
+                map.getView().fit(extent, map.getSize());
+                listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+                $('#sortableul').prepend(listappend);
+                layer_index.push(rndlayerid);
+                layer[rndlayerid].setZIndex(layer.length)
+            }
+        }
+    });
+}
 
 $('#ext_wms_item_list').on('click', function(e) {
     p_id = $(e.target).attr('id');
     srv_type = $('#ext_srv_t').text();
-    srv_url = $('#url_ext_srv').text();
+    srv_url = $('#ext_srv_url').text();
     if (srv_type == 'OGC WMS') { tipe = 'WMS' } else { tipe = 'ESRI' };
     if (tipe == 'WMS') {
         if (p_id == '' || typeof(p_id) == 'undefined' || p_id == 'add_check') {
@@ -924,6 +1187,109 @@ $('#ext_wms_item_list').on('click', function(e) {
                 p_state = $(e.target).text();
             }
         }
+        console.log(srv_url, p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+        olAddWMSLayer(srv_url, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+    } else {
+        olAddRESTLayer(srv_url, p_id);
+    }
+})
+
+$('#getwmslist').on('click', function() {
+    srv_type = $('#srv_type').val();
+    srv_url = $('#url_servis').val();
+    if (srv_type == 'WMS') {
+        function getWMSdata() {
+            wmscapurl = srv_url + '?service=wms&request=GetCapabilities';
+            $.ajax({
+                url: _proxy + encodeURIComponent(wmscapurl),
+                async: false,
+                success: function(wmscapobj) {
+                    wmscap = new WMSCapabilities().parse(wmscapobj);
+                    console.log(wmscap)
+                    wmslayerlist = wmscap.Capability.Layer.Layer;
+                    window.raw_out_wms = wmslayerlist;
+                    console.log(wmslayerlist)
+                    $('#wms_item_list').empty();
+                    for (i = 0; i < wmslayerlist.length; i++) {
+                        item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
+                        $('#wms_item_list').append(item_html);
+                    }
+                }
+            })
+        }
+        getWMSdata();
+    } else {
+        esricapurl = srv_url + '?f=pjson';
+
+        function getRESTdata() {
+            $.ajax({
+                url: esricapurl,
+                async: false,
+                success: function(data) {
+                    layers = JSON.parse(data).layers;
+                    console.log(layers)
+                    for (i = 0; i < layers.length; i++) {
+                        item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
+                        $('#wms_item_list').append(item_html);
+                    }
+                }
+            })
+        }
+        getRESTdata();
+        // $.get(esricapurl, function(data) {
+        //     console.log(JSON.parse(data));
+        //     layers = JSON.parse(data).layers;
+        //     for (i = 0; i < layers.length; i++) {
+        //         item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
+        //         $('#ext_wms_item_list').append(item_html);
+        //     }
+        // });
+    }
+})
+
+$('#wms_item_list').on('click', function(e) {
+    p_id = $(e.target).attr('id');
+    srv_type = $('#srv_type').val();
+    srv_url = $('#url_servis').val();
+    if (srv_type == 'WMS') {
+        if (p_id == '' || typeof(p_id) == 'undefined' || p_id == 'add_check') {
+            p_id = $(e.target).closest('li').attr('id');
+        }
+        var min_x, min_y, max_x, max_y, layer_nativename;
+        for (i = 0; i < raw_out_wms.length; i++) {
+            // console.log(raw_local_wms[i].layer_nativename)
+            try {
+                if (raw_out_wms[i].Name.indexOf(p_id) >= 0) {
+                    min_x = raw_out_wms[i].EX_GeographicBoundingBox[0];
+                    min_y = raw_out_wms[i].EX_GeographicBoundingBox[1];
+                    max_x = raw_out_wms[i].EX_GeographicBoundingBox[2];
+                    max_y = raw_out_wms[i].EX_GeographicBoundingBox[3];
+                    layer_nativename = raw_out_wms[i].Name;
+                }
+            } catch (error) {
+                // if (raw_out_wms[i].Title.indexOf(p_id) >= 0) {
+                min_x = raw_out_wms[i].EX_GeographicBoundingBox[0];
+                min_y = raw_out_wms[i].EX_GeographicBoundingBox[1];
+                max_x = raw_out_wms[i].EX_GeographicBoundingBox[2];
+                max_y = raw_out_wms[i].EX_GeographicBoundingBox[3];
+                layer_nativename = raw_out_wms[i].Title;
+                // }    
+            }
+        }
+        p_name = $(e.target).find('.layermark').first().text();
+        if (p_name == '' || typeof(p_name) == 'undefined') {
+            p_name = $(e.target).closest('.layermark').first().text();
+            if (p_name == '' || typeof(p_name) == 'undefined') {
+                p_name = $(e.target).siblings('.layermark').first().text();
+            }
+        }
+        p_state = $(e.target).find('#add_check').first().text();
+        if (p_state == '' || typeof(p_state) == 'undefined') {
+            p_state = $(e.target).siblings('#add_check').first().text();
+            if (p_state == '' || typeof(p_state) == 'undefined') {
+                p_state = $(e.target).text();
+            }
+        }
         console.log(p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
         olAddWMSLayer(srv_url, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
     } else {
@@ -937,7 +1303,7 @@ function extChanged() {
     $("#ext_srv_type").on('change', function() {
         console.log('CHANGED');
         tipe = 'WMS';
-        $("#url_ext_srv").text($("#ext_srv_type").val())
+        $("#ext_srv_url").text($("#ext_srv_type").val())
         $('#ext_wms_item_list').empty();
         for (i = 0; i < ext_srv.length; i++) {
             if (ext_srv[i].url == $("#ext_srv_type").val()) {
@@ -1032,7 +1398,10 @@ $("#layerwindow_lokal").on('click', function(e) {
     } else {
         p_name = $(e.target).siblings('.layermark').first().text();
     }
-    console.log(p_id);
+    if (p_name == '') {
+        p_name = $(e.target).text();
+    }
+    console.log($(e.target), p_id);
     var min_x, min_y, max_x, max_y, layer_nativename;
     for (i = 0; i < raw_local_wms.length; i++) {
         if (raw_local_wms[i].layer_nativename.indexOf(p_id) >= 0) {
@@ -1044,7 +1413,57 @@ $("#layerwindow_lokal").on('click', function(e) {
         }
     }
     console.log(p_name, min_x, min_y, max_x, max_y, layer_nativename);
-    olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+    if (typeof(p_name) == 'undefined' || typeof(p_id) == 'undefined') {
+        // pass
+    } else {
+        olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+    }
+})
+
+$("#sortableul").on('click', "li .collapsible-header .layer_control i#visibility", function(e) {
+    e.stopPropagation();
+    p_id = $(e.target).closest('li').attr('id');
+    // console.log($(e.target).text());
+    p_state = $(e.target).text();
+    layerVis(p_id);
+    if (p_state == 'check_box') {
+        $(e.target).text('check_box_outline_blank');
+    } else {
+        $(e.target).text('check_box');
+    }
+    e.preventDefault();
+})
+
+$("#sortableul").on('click', "li .collapsible-header i#zextent", function(e) {
+    e.stopPropagation();
+    p_id = $(e.target).closest('li').attr('id');
+    layerZm(p_id);
+    e.preventDefault();
+})
+
+$("#sortableul").on('click', "li .collapsible-header i#remove", function(e) {
+    e.stopPropagation();
+    p_id = $(e.target).closest('li').attr('id');
+    p_state = $(e.target).text();
+    // try {
+    //     p_native = ("#" + layer[p_id].getSource().i.LAYERS).replace(":", "\\\\:");
+    //     console.log(p_native)
+    //     $('[id="' + layer[p_id].getSource().i.LAYERS + '"]').find('i').text('check_box_outline_blank');
+    // } catch (error) {
+    //     //
+    // }
+    layerRm(p_id);
+    delete layer[p_id];
+    e.preventDefault();
+})
+$("#sortableul").on('mouseup', "li .collapsible-body .row .col #opacity", function(e) {
+    // e.preventDefault();
+    // e.stopPropagation();
+    p_id = $(e.target).closest('li').attr('id');
+    p_frac = Number($(e.target).closest('input').val());
+    console.log(p_id, p_frac);
+    layerOpa(p_id, p_frac);
+    p_state = $(e.target).text();
 })
 
 // Get Initial Data
@@ -1097,12 +1516,35 @@ function getExtService() {
 }
 getExtService();
 
+getBasemaps();
+
+setTimeout(() => {
+    for (var key in basemap) {
+        if (key === 'length' || !basemap.hasOwnProperty(key)) continue;
+        console.log(basemap[key])
+        default_layers.push(basemap[key]);
+        map.addLayer(basemap[key]);
+        item_html = "<div id='" + key + "'><div class='card basemapcard'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>" + basemap[key].get('title') + "</span></div></div></div>";
+        $(".basemapmodal").append(item_html);
+        console.log(item_html)
+    }
+
+}, 1000);
 
 // DOC READY
 
 $(document).ready(function() {
     $('select').material_select();
-
-
-
+    var sortableel = document.getElementById('sortableul');
+    var sortableul = Sortable.create(sortableel, {
+        handle: ".collapsible-header",
+        onEnd: function(e) {
+            listindex = $("#sortableul li");
+            listindex.reverse();
+            listindex.each(function(index, li) {
+                layer[li.id].setZIndex(index)
+            })
+        }
+    });
+    $('.tooltipped').tooltip({ delay: 50 });
 });
