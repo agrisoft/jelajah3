@@ -37,6 +37,7 @@ var listener;
 var box_ukur_visible = false;
 var start_measure = false;
 var listgeocoding = false;
+var cari_val;
 
 // Functions
 function getSimpulInfo() {
@@ -101,7 +102,7 @@ function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, ma
     map.addLayer(layer[rndlayerid]);
     console.log(rndlayerid, layermark, layer[rndlayerid].get('title'))
     setTimeout(() => {
-        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i><span class='layer_name'>" + layer[rndlayerid].get('title') + "</span></div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i><span class='layer_name'>" + layer[rndlayerid].get('title') + "</span></div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
         $('#sortableul').prepend(listappend);
         info_layer.push(rndlayerid);
         extent = layer[rndlayerid].getExtent();
@@ -136,10 +137,10 @@ function olAddDEFLayer(layername, layermark, layer_nativename, aktif, min_x, min
         map.addLayer(layer[rndlayerid]);
         console.log(rndlayerid, layermark, layer[rndlayerid].get('title'))
         if (aktif) {
-            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
             $('#sortableul').prepend(listappend);
         } else {
-            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box_outline_blank</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box_outline_blank</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
             $('#sortableul').prepend(listappend);
             layer[rndlayerid].setVisible(false);
         }
@@ -176,7 +177,7 @@ function olAddRESTLayer(serviceUrl, id) {
     });
     map.addLayer(layer[rndlayerid]);
     setTimeout(() => {
-        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
         $('#sortableul').prepend(listappend);
         info_layer.push(rndlayerid);
         extent = layer[rndlayerid].getExtent();
@@ -321,7 +322,7 @@ function loadShpZip(files, rndid) {
             layer_index.push(rndlayerid);
             layer[rndlayerid].setZIndex(layer.length);
             layer[rndlayerid].setStyle(vector_style);
-            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
             $('#sortableul').prepend(listappend);
         }, 2000);
         //   delete layer;
@@ -367,7 +368,7 @@ function loadGpx(files, rndid) {
             layer_index.push(rndlayerid);
             layer[rndlayerid].setZIndex(layer.length);
             layer[rndlayerid].setStyle(vector_style)
-            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
             $('#sortableul').prepend(listappend);
         }, 2000);
     };
@@ -421,7 +422,7 @@ function loadCSV(files, rndid) {
                 map.addLayer(layer[layeritem]);
                 extent = layer[layeritem].getSource().getExtent();
                 map.getView().fit(extent, map.getSize());
-                listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+                listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
                 $('#sortableul').prepend(listappend);
             }, 2000);
         });
@@ -874,20 +875,21 @@ function getInfo(evt, layer) {
 
 // Init UI Controls
 
-var basemapbox = "<div class='basemapbox'><span class='basemapbtn'>Basemap</span><span class='photos'>Foto</span></div>";
-var basemapmodal = "<div class='basemapmodal'><div id='base_osm'><div class='card basemapcard'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>OSM</span></div></div></div><div id='base_rbi'><div class='card basemapcard'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>RBI</span></div></div></div><div id='base_esri'><div class='card basemapcard'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>ESRI</span></div></div></div><div id='base_rbibaru'><div class='card basemapcard'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>RBI OS</span></div></div></div></div>";
+var basemapbox = "<div class='basemapbox'><span class='basemapbtn'><i class='material-icons lrbox'>perm_media</i> Basemap</span><span class='photos' style='display:none;'><i class='material-icons lrbox'>photo_camera</i> Foto</span></div>";
+var basemapmodal = "<div class='basemapmodal'><div id='base_osm'><div class='card basemapcard'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>OSM</span></div></div></div><div id='base_rbi'><div class='card basemapcard'><div class='card-image'><img src='images/rbi.png'><span class='card-title basemap'>RBI</span></div></div></div><div id='base_esri'><div class='card basemapcard'><div class='card-image'><img src='images/esri_i.png'><span class='card-title basemap'>ESRI</span></div></div></div><div id='base_rbibaru'><div class='card basemapcard'><div class='card-image'><img src='images/rbios.png'><span class='card-title basemap'>RBI OS</span></div></div></div></div>";
 var photosmodal = "<div class='photosmodal'></div>";
 var cari_geocoding = "<div class='cari_geocoding'></div>";
 var cari_geocoding_input = "<input id='cari_geocoding_input' type='text' class='validate cari_geocoding_input'>";
 var cari_geocoding_submit = "<i class='material-icons cari_geocoding_submit'>search</i><i class='material-icons cari_geocoding_tutup'>close</i>";
 var hasil_cari_geocoding = "<div class='row geocoding_wrap'><div id='hasil_cari_geocoding' class='col s12 white'><ul id='list_hasil'></ul></div>"
 var leftsidebarburger = "<i class='material-icons leftsidebarburger'>menu</i>"
-var leftsidebar = "<div class='leftsidebar'><span class='daftarlayer'>Daftar Layer</span><a class='right waves-effect waves-light btn addlayerbtn tooltipped' data-position='right' data-delay='50' data-tooltip='Tambah Layer' id='addlayerbtn'><i class='material-icons left addlayerbtni'>collections</i></a><ul id='sortableul' class='collapsible' data-collapsible='expandable'></ul></div>";
-var layerwindow = "<div id='layerwindow'><div id='layerwindowheader'>Tambah Layer<i class='material-icons layerwindowclose right'>close</i></div><div id='layerwindowcontent'><ul id='addlayerstab' class='tabs'><li class='tab col s3'><a class='active' href='#locallayer'>Dataset</a></li><li class='tab col s3'><a href='#simpul'>Simpul</a></li><li class='tab col s3'><a href='#localfiles'>File</a></li><li class='tab col s3'><a href='#extlayer'>URL</a></li></ul><div id='tabsubheader'></div><div id='locallayer' class='col s12 grey lighten-4 addlayercontentpad'></div><div id='extlayer' class='col s12 red addlayercontentpad'>TEST<div class='col s12'></div></div><div id='localfiles' class='col s12 grey lighten-4 addlayercontentpad'><div id='dropzone'></div></div><div id='simpul' class='col s12 white addlayercontentpad'><div class='col s2' id='ext_srv_t'></div><div class='col s2' id='ext_srv_url' style='display:none;'></div><div class='col s12'> <ul id='ext_wms_item_list' class='collection'></ul></div></div></div></div></div></div></div></div>";
+var leftsidebar = "<div class='leftsidebar'><span class='daftarlayer'>Daftar Layer</span><a class='right waves-effect waves-light btn addlayerbtn tooltipped' data-position='right' data-delay='50' data-tooltip='Tambah Layer' id='addlayerbtn'><i class='material-icons left addlayerbtni'>add_box</i></a><a class='right waves-effect waves-light btn-flat tutupbtn tooltipped' data-position='right' data-delay='50' data-tooltip='Tutup Sidebar' id='tutupbtn'><i class='material-icons tutupbtni'>chevron_left</i></a><ul id='sortableul' class='collapsible' data-collapsible='expandable'></ul></div>";
+var layerwindow = "<div id='layerwindow'><div id='layerwindowheader'>Tambah Layer <i class='material-icons layerwindowclose right'>close</i></div><div id='layerwindowcontent'><ul class='tabs' id='addlayerstab'><li class='tab col s3'><a class='active'  href='#locallayer'>Dataset</a></li><li class='tab col s3'><a href='#simpul'>Simpul</a></li><li class='tab col s3'><a href='#localfiles'>File</a></li><li class='tab col s3'><a href='#extlayer'>URL</a></li></ul><div id='tabsubheader'></div><div class='col s12 grey lighten-4 addlayercontentpad' id='locallayer'></div><div class='col s12 grey lighten-4 addlayercontentpad' id='extlayer'><ul class='collection' id='wms_item_list'></ul></div><div class='col s12 grey lighten-4 addlayercontentpad' id='localfiles'><div id='dropzone'></div></div><div class='col s12 white addlayercontentpad' id='simpul'><div class='col s2' id='ext_srv_t'></div><div class='col s2' id='ext_srv_url' style='display:none;'></div><div class='col s12'><ul class='collection' id='ext_wms_item_list'></ul></div></div></div></div>";
 var layerwindow_lokal = "<ul class='collapsible' data-collapsible='expandable' id='layerwindow_lokal'></ul>";
 var tablayerlokal = "<div class='input-field col s12 textinputnolab'><input placeholder='Cari layer ...' id='layername_lokal' type='text' class='validate tabsub' style='margin:0px;'/></div>";
 var tablayersimpul = "<div class='input-field col s12 textinputnolab'><select id='ext_srv_type'><option disable='' selected='selected' value='WMS'>Pilih Servis</option></select></div>";
-var tablayerurl = "<div class='input-field col s12 textinputnolab'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s12'><input placeholder='URL servis' class='validate' id='url_servis' type='text' /></div></div><div class='row'><div class='input-field col s8'><select id='srv_type'><option disable='' selected='selected' value='WMS'>OGC WMS</option><option value='ESRI'>ESRI REST</option></select></div><div class='col s4'><a class='waves-effect waves-light btn' id='getwmslist'>Ambil List</a></div>";
+var tablayerurl = "<div class='input-field col s12 textinputnolab' style='padding: 0px;'><div class='row'><div class='col s12 taburl'><div class='row' style='margin-bottom: 0px !important;'><div class='input-field col s12 textinputnolab' style='padding: 0px;'><input class='validate' style='margin-bottom: 0px;' id='url_servis' placeholder='URL servis' type='text'/></div></div></div></div><div class='row'><div class='input-field col s8 textinputnolab'><select id='srv_type'><option disable='' selected='selected' value='WMS'>OGC WMS</option><option value='ESRI'>ESRI REST</option></select></div><div class='col s4 textinputnolab'><a class='waves-effect waves-light btn' id='getwmslist'>Ambil List</a></div></div></div>";
+var box_ukur = "<div id='box_ukur'><div class='input-field'><select id='select_ukur'><option value='' disabled selected>Pilih pengukuran</option><option value='1'>Panjang</option><option value='2'>Luas</option></select><label>Geometri</label></div><div id='panjang' class='input-field' style='display:none;'><select id='satuan_panjang'><option value=0 disabled selected>Satuan</option><option value=1>Meter (m)</option><option value=2>Kilometer (km)</option><option value=3>Mil</option></select><label>Satuan</label></div><div id='luas' class='input-field' style='display:none;'><select id='satuan_luas'><option value=0 disabled selected>Satuan</option><option value=4>Meter Persegi (m2)</option><option value=5>Kilometer Persegi (km2)</option><option value=6>Mil Persegi</option></select><label>Satuan</label></div></div>";
 
 $("#jelajah").append(basemapbox);
 $("#jelajah").append(basemapmodal);
@@ -898,6 +900,7 @@ $(".cari_geocoding").append(cari_geocoding_input);
 $(".cari_geocoding").append(cari_geocoding_submit);
 $("#jelajah").append(leftsidebar);
 $("#jelajah").append(layerwindow);
+$("#jelajah").append(box_ukur);
 $("#locallayer").append(layerwindow_lokal);
 $("#tabsubheader").append(tablayerlokal);
 // $("#jelajah").append(hasil_cari_geocoding);
@@ -908,6 +911,8 @@ $("#dropzone").append("<div id='dropinfo'>Klik di sini, atau Taruh berkas ZIP (S
 var basemapmodal_stat = false;
 var photosmodal_stat = false;
 var leftsidebar_stat = false;
+var box_ukur_visible = false;
+var start_measure = false;
 
 $(function() {
     var dropzone = new Dropzone("#dropzone", {
@@ -927,10 +932,16 @@ $(function() {
 
 function layertabswitch(tab) {
     if (tab == 'Dataset') {
-        $("#tabsubheader").empty()
-        $("#tabsubheader").append(tablayerlokal)
+        console.log('Dataset');
+        $("#tabsubheader").empty();
+        $("#tabsubheader").append(tablayerlokal);
+        layer_cari();
+        if (layer_cari) {
+            $("#layername_lokal").val(cari_val);
+        }
     }
     if (tab == 'Simpul') {
+        console.log('Simpul');
         $("#tabsubheader").empty()
         $("#tabsubheader").append(tablayersimpul)
         for (i = 0; i < ext_srv.length; i++) {
@@ -942,12 +953,14 @@ function layertabswitch(tab) {
         $('select').material_select();
     }
     if (tab == 'URL') {
-
-        $("#tabsubheader").empty()
-        $("#tabsubheader").append(tablayerurl)
+        console.log('URL');
+        $("#tabsubheader").empty();
+        $("#tabsubheader").append(tablayerurl);
+        getwmslist();
+        $('select').material_select();
     }
     if (tab == 'File') {
-
+        console.log('File');
         $("#tabsubheader").empty()
     }
 }
@@ -955,6 +968,7 @@ function layertabswitch(tab) {
 function basemapstoggle() {
     if (!basemapmodal_stat) {
         $(".ol-zoom").css('bottom', '9.5em');
+        $("#zoomextent").css('bottom', '217px');
         $(".basemapbox").css('bottom', '100px');
         $(".basemapmodal").css('height', '100px');
         $(".photosmodal").css('height', '0px');
@@ -962,6 +976,7 @@ function basemapstoggle() {
         if (photosmodal_stat) { photosmodal_stat = false; }
     } else {
         $(".ol-zoom").css('bottom', '5em');
+        $("#zoomextent").css('bottom', '150px');
         $(".basemapbox").css('bottom', '35px')
         $(".basemapmodal").css('height', '0px');
         basemapmodal_stat = false;
@@ -971,6 +986,7 @@ function basemapstoggle() {
 function photostoggle() {
     if (!photosmodal_stat) {
         $(".ol-zoom").css('bottom', '9.5em');
+        $("#zoomextent").css('bottom', '217px');
         $(".basemapbox").css('bottom', '100px');
         $(".photosmodal").css('height', '100px');
         $(".basemapmodal").css('height', '0px');
@@ -980,6 +996,7 @@ function photostoggle() {
         }
     } else {
         $(".ol-zoom").css('bottom', '5em');
+        $("#zoomextent").css('bottom', '150px');
         $(".basemapbox").css('bottom', '35px')
         $(".photosmodal").css('height', '0px');
         photosmodal_stat = false;
@@ -1041,6 +1058,71 @@ function dragElement(elmnt) {
     }
 }
 
+$('.ol-overlaycontainer-stopevent').append("<div id='zoomextent' class='ol-control'></div>");
+$('#zoomextent').append("<button id='zoomextentbtn' type='button' title='Zoom To Extent'><i id='zoomextenbtni' class='material-icons'>public</i></button></div>");
+$('#zoomextenbtni').on('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('ZE')
+    map.getView().fit(merc_extent, map.getSize());
+});
+
+$('.ol-overlaycontainer-stopevent').append("<div id='ukuran' class='ol-control'></div>");
+$('#zoomextent').append("<button id='ukuranbtn' type='button' title='Pengukuran'><i id='ukuranbtni' class='material-icons'>straighten</i></button></div>");
+$('#ukuranbtni').on('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('ME')
+    draw_vector.setVisible(true);
+    if (box_ukur_visible) {
+        $('#box_ukur').hide();
+        box_ukur_visible = false;
+        start_measure = false;
+        map.removeInteraction(draw);
+        draw_source.clear();
+        $('.olm_tooltip.olm_tooltip-static').remove()
+    } else {
+        $('#box_ukur').show();
+        box_ukur_visible = true;
+        start_measure = true;
+        // addInteraction();
+    }
+});
+
+$("#select_ukur").on('change', function() {
+    draw_vector.setVisible(true);
+    console.log($("#select_ukur").val())
+    if ($("#select_ukur").val() == 1) {
+        $('#panjang').show();
+        $('#luas').hide();
+    } else {
+        $('#panjang').hide();
+        $('#luas').show();
+    }
+    if ($("#satuan_panjang").val() || $("#satuan_luas").val()) {
+        map.removeInteraction(draw);
+        draw_source.clear();
+        $('.olm_tooltip.olm_tooltip-static').remove()
+        addInteraction();
+    }
+});
+
+$("#satuan_panjang").on('change', function() {
+    draw_vector.setVisible(true);
+    map.removeInteraction(draw);
+    draw_source.clear();
+    $('.olm_tooltip.olm_tooltip-static').remove()
+    addInteraction();
+})
+
+$("#satuan_luas").on('change', function() {
+    draw_vector.setVisible(true);
+    map.removeInteraction(draw);
+    draw_source.clear();
+    $('.olm_tooltip.olm_tooltip-static').remove()
+    addInteraction();
+})
+
 $(".basemapbtn").on('click', function() {
     basemapstoggle();
 })
@@ -1050,6 +1132,10 @@ $(".photos").on('click', function() {
 })
 
 $(".leftsidebarburger").on('click', function() {
+    leftsidebartoggle();
+})
+
+$(".tutupbtni").on('click', function() {
     leftsidebartoggle();
 })
 
@@ -1066,7 +1152,7 @@ $(".layerwindowclose").on('click', function() {
     $("#layerwindow").hide();
 })
 
-$(".cari_geocoding_submit").on('click', function() {
+function geocoding_cari() {
     $(".geocoding_wrap").remove();
     $("#hasil_cari_geocoding").remove();
     $("#jelajah").append(hasil_cari_geocoding);
@@ -1091,8 +1177,16 @@ $(".cari_geocoding_submit").on('click', function() {
         }, 500);
         window.listgeocoding = true;
     }
+}
 
+$(".cari_geocoding_submit").on('click', function() {
+    geocoding_cari()
 })
+
+$("#cari_geocoding_input").on("keydown", function(event) {
+    if (event.which == 13)
+        geocoding_cari();
+});
 
 $(".cari_geocoding_tutup").on('click', function() {
     $(".geocoding_wrap").remove();
@@ -1144,7 +1238,7 @@ function list_hasil_event() {
                 map.addLayer(layer[rndlayerid]);
                 extent = layer[rndlayerid].getSource().getExtent();
                 map.getView().fit(extent, map.getSize());
-                listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+                listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
                 $('#sortableul').prepend(listappend);
                 layer_index.push(rndlayerid);
                 layer[rndlayerid].setZIndex(layer.length)
@@ -1194,58 +1288,54 @@ $('#ext_wms_item_list').on('click', function(e) {
     }
 })
 
-$('#getwmslist').on('click', function() {
-    srv_type = $('#srv_type').val();
-    srv_url = $('#url_servis').val();
-    if (srv_type == 'WMS') {
-        function getWMSdata() {
-            wmscapurl = srv_url + '?service=wms&request=GetCapabilities';
-            $.ajax({
-                url: _proxy + encodeURIComponent(wmscapurl),
-                async: false,
-                success: function(wmscapobj) {
-                    wmscap = new WMSCapabilities().parse(wmscapobj);
-                    console.log(wmscap)
-                    wmslayerlist = wmscap.Capability.Layer.Layer;
-                    window.raw_out_wms = wmslayerlist;
-                    console.log(wmslayerlist)
-                    $('#wms_item_list').empty();
-                    for (i = 0; i < wmslayerlist.length; i++) {
-                        item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
-                        $('#wms_item_list').append(item_html);
+function getwmslist() {
+    $('#getwmslist').on('click', function() {
+        srv_type = $('#srv_type').val();
+        srv_url = $('#url_servis').val();
+        console.log('CLICKED', srv_type, srv_url);
+        if (srv_type == 'WMS') {
+            function getWMSdata() {
+                wmscapurl = srv_url + '?service=wms&request=GetCapabilities';
+                $.ajax({
+                    url: _proxy + encodeURIComponent(wmscapurl),
+                    async: false,
+                    success: function(wmscapobj) {
+                        wmscap = new WMSCapabilities().parse(wmscapobj);
+                        console.log(wmscap)
+                        wmslayerlist = wmscap.Capability.Layer.Layer;
+                        window.raw_out_wms = wmslayerlist;
+                        console.log(wmslayerlist)
+                        $('#wms_item_list').empty();
+                        for (i = 0; i < wmslayerlist.length; i++) {
+                            item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons ilist2'>add_circle</i> <span class='layermark lilist2' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
+                            $('#wms_item_list').append(item_html);
+                        }
                     }
-                }
-            })
-        }
-        getWMSdata();
-    } else {
-        esricapurl = srv_url + '?f=pjson';
+                })
+            }
+            getWMSdata();
+        } else {
+            esricapurl = srv_url + '?f=pjson';
 
-        function getRESTdata() {
-            $.ajax({
-                url: esricapurl,
-                async: false,
-                success: function(data) {
-                    layers = JSON.parse(data).layers;
-                    console.log(layers)
-                    for (i = 0; i < layers.length; i++) {
-                        item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
-                        $('#wms_item_list').append(item_html);
+            function getRESTdata() {
+                $.ajax({
+                    url: esricapurl,
+                    async: false,
+                    success: function(data) {
+                        layers = JSON.parse(data).layers;
+                        console.log(layers)
+                        for (i = 0; i < layers.length; i++) {
+                            item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons ilist2'>add_circle</i> <span class='layermark lilist2' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
+                            $('#wms_item_list').append(item_html);
+                        }
                     }
-                }
-            })
+                })
+            }
+            getRESTdata();
         }
-        getRESTdata();
-        // $.get(esricapurl, function(data) {
-        //     console.log(JSON.parse(data));
-        //     layers = JSON.parse(data).layers;
-        //     for (i = 0; i < layers.length; i++) {
-        //         item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
-        //         $('#ext_wms_item_list').append(item_html);
-        //     }
-        // });
-    }
-})
+    })
+
+}
 
 $('#wms_item_list').on('click', function(e) {
     p_id = $(e.target).attr('id');
@@ -1322,7 +1412,7 @@ function extChanged() {
                                 console.log(wmslayerlist)
                                 $('#wms_item_list').empty();
                                 for (i = 0; i < wmslayerlist.length; i++) {
-                                    item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
+                                    item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons ilist2'>add_circle</i> <span class='layermark lilist2' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
                                     $('#ext_wms_item_list').append(item_html);
                                 }
                             }
@@ -1338,7 +1428,7 @@ function extChanged() {
                             success: function(data) {
                                 layers = JSON.parse(data).layers;
                                 for (i = 0; i < layers.length; i++) {
-                                    item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
+                                    item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons ilist2'>add_circle</i> <span class='layermark lilist2' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
                                     $('#ext_wms_item_list').append(item_html);
                                 }
                             }
@@ -1359,37 +1449,42 @@ function extChanged() {
     })
 }
 
-$("#layername_lokal").on('input', function() {
-    $('#layerwindow_lokal').empty();
-    console.log($("#layername_lokal").val())
-    carilayer = $("#layername_lokal").val();
-    listw = [];
-    for (j = 0; j < raw_local_wms.length; j++) {
-        listw.push(raw_local_wms[j].workspace);
-    }
-    list_workspace = uniqueArray(listw);
-    for (k = 0; k < list_workspace.length; k++) {
-        w_html = "<li id='wrk_" + list_workspace[k] + "'><div class='collapsible-header active'><i class='material-icons tiny'>collections</i>" + list_workspace[k] + "</div><div class='collapsible-body'><ul id='id_" + list_workspace[k] + "' class='collection'></ul></div></li>";
-        $('#layerwindow_lokal').append(w_html);
-        items = 0;
-        for (u = 0; u < raw_local_wms.length; u++) {
-            if (raw_local_wms[u].layer_name.toLowerCase().indexOf(carilayer) >= 0) {
-                if (raw_local_wms[u].workspace == list_workspace[k] && raw_local_wms[u].layer_advertised == true) {
-                    l_html = "<li id='" + raw_local_wms[u].layer_nativename + "' class='collection-item'><i id='" + raw_local_wms[u].layer_nativename + "' class='material-icons'>add_circle</i> <span class='layermark' id='" + raw_local_wms[u].layer_nativename + "'>" + raw_local_wms[u].layer_name + "</span></li>";
-                    $('#id_' + list_workspace[k]).append(l_html);
-                    items = items + 1;
+
+function layer_cari() {
+    $("#layername_lokal").on('input', function() {
+        $('#layerwindow_lokal').empty();
+        console.log($("#layername_lokal").val())
+        carilayer = $("#layername_lokal").val();
+        window.cari_val = carilayer;
+        listw = [];
+        for (j = 0; j < raw_local_wms.length; j++) {
+            listw.push(raw_local_wms[j].workspace);
+        }
+        list_workspace = uniqueArray(listw);
+        for (k = 0; k < list_workspace.length; k++) {
+            w_html = "<li id='wrk_" + list_workspace[k] + "'><div class='collapsible-header active'><i class='material-icons tiny'>collections</i>" + list_workspace[k] + "</div><div class='collapsible-body'><ul id='id_" + list_workspace[k] + "' class='collection'></ul></div></li>";
+            $('#layerwindow_lokal').append(w_html);
+            items = 0;
+            for (u = 0; u < raw_local_wms.length; u++) {
+                if (raw_local_wms[u].layer_name.toLowerCase().indexOf(carilayer) >= 0) {
+                    if (raw_local_wms[u].workspace == list_workspace[k] && raw_local_wms[u].layer_advertised == true) {
+                        l_html = "<li id='" + raw_local_wms[u].layer_nativename + "' class='collection-item'><i id='" + raw_local_wms[u].layer_nativename + "' class='material-icons ilist'>add_circle</i> <span class='layermark lilist' id='" + raw_local_wms[u].layer_nativename + "'>" + raw_local_wms[u].layer_name + "</span></li>";
+                        $('#id_' + list_workspace[k]).append(l_html);
+                        items = items + 1;
+                    }
                 }
             }
+            if (items == 0) {
+                $('#wrk_' + list_workspace[k]).remove();
+            }
         }
-        if (items == 0) {
-            $('#wrk_' + list_workspace[k]).remove();
+        if ($("#layername_lokal").val() == '') {
+            $('#layerwindow_lokal').empty();
+            getLocalLayers();
         }
-    }
-    if ($("#layername_lokal").val() == '') {
-        $('#layerwindow_lokal').empty();
-        getLocalLayers();
-    }
-})
+        $('.collapsible').collapsible();
+    })
+}
 
 $("#layerwindow_lokal").on('click', function(e) {
     p_id = $(e.target).attr('id');
@@ -1485,7 +1580,7 @@ function getLocalLayers() {
                 items = 0;
                 for (u = 0; u < data.length; u++) {
                     if (data[u].workspace == list_workspace[k] && data[u].layer_advertised == true) {
-                        l_html = "<li id='" + data[u].layer_nativename + "' class='collection-item'><i id='" + raw_local_wms[u].layer_nativename + "' class='material-icons'>add_circle</i> <span class='layermark' id='" + data[u].layer_nativename + "'>" + data[u].layer_name + "</span></li>";
+                        l_html = "<li id='" + data[u].layer_nativename + "' class='collection-item'><i id='" + raw_local_wms[u].layer_nativename + "' class='material-icons ilist'>add_circle</i> <span class='layermark lilist' id='" + data[u].layer_nativename + "'>" + data[u].layer_name + "</span></li>";
                         $('#id_' + list_workspace[k]).append(l_html);
                         items = items + 1;
                     }
@@ -1547,4 +1642,5 @@ $(document).ready(function() {
         }
     });
     $('.tooltipped').tooltip({ delay: 50 });
+    layer_cari();
 });

@@ -44,6 +44,22 @@ body {
     display: none;
 }
 
+.tutupbtn {
+    /* background: red; */
+    width: 35px;
+    padding: 0px;
+    position: absolute;
+    right: 10px;
+    /* position: absolute;
+    right: 35px; */
+}
+
+.tutupbtni {
+    font-size: xx-large !important;
+    position: absolute;
+    right: 0px;
+}
+
 .daftarlayer {
     font-size: unset;
     font-weight: 800;
@@ -55,7 +71,7 @@ body {
 .addlayerbtn {
     height: 35px;
     /* padding-right: 10px; */
-    margin-right: 10px;
+    margin-right: 50px;
     /* padding-top: 5px !important; */
     width: 50px;
 }
@@ -65,19 +81,22 @@ body {
 }
 
 .basemapbox {
-    background-color: red;
+    background-color: white;
     height: 30px;
     position: absolute;
-    width: 200px;
+    /* width: 200px; */
+    width: 100px;
     bottom: 35px;
     right: 10px;
     -webkit-transition: bottom 0.5s;
     transition: bottom 0.5s;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    border-radius: 3px;
 }
 
 .basemapbtn {
-    background-color: yellow;
+    display: inline-flex;
+    background-color: white;
     height: 20px;
     position: absolute;
     width: 92px;
@@ -90,6 +109,7 @@ body {
 
 .basemapbtn:hover {
     background-color: darkolivegreen;
+    color: white;
 }
 
 .basemapcard {
@@ -99,8 +119,19 @@ body {
     cursor: pointer;
 }
 
+.basemapcard:hover {
+    color: #006064;
+    opacity: 0.5;
+}
+
+.lrbox {
+    font-size: 20px;
+    padding-right: 5px;
+}
+
 .photos {
-    background-color: lightgreen;
+    display: inline-flex;
+    background-color: white;
     height: 20px;
     position: absolute;
     width: 92px;
@@ -113,6 +144,7 @@ body {
 
 .photos:hover {
     background-color: darkolivegreen;
+    color: white;
 }
 
 .basemapmodal {
@@ -120,7 +152,7 @@ body {
     bottom: 0px;
     width: 100%;
     height: 0px;
-    background-color: teal;
+    background-color: white;
     /* display: none; */
     -webkit-transition: height 0.5s;
     transition: height 0.5s;
@@ -128,6 +160,7 @@ body {
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
+    opacity: 0.8;
 }
 
 .photosmodal {
@@ -146,7 +179,7 @@ body {
     position: absolute;
     top: 25px;
     left: 25px;
-    width: 450px;
+    width: 350px;
     height: 54px;
     background-color: white;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -207,7 +240,7 @@ body {
     left: 50px;
     font-size: medium;
     padding: 10px;
-    width: 350px !important;
+    width: 250px !important;
 }
 
 .geocoding_wrap {
@@ -217,13 +250,36 @@ body {
     bottom: 0 !important;
     left: 0;
     margin: 0 !important;
-    width: 500px;
+    width: 400px;
     z-index: 5;
     opacity: 0.8;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     -webkit-transition: left 0.5s;
     transition: left 0.5s;
     /* display: none; */
+}
+
+.lilist {
+    position: relative;
+    left: 10px;
+    top: -4px;
+}
+
+.ilist {
+    font-size: 16px;
+    padding-top: 6px;
+}
+
+.lilist2 {
+    position: relative;
+}
+
+.ilist2 {
+    font-size: 16px;
+}
+
+.col .s12 .taburl {
+    padding: 0px !important;
 }
 
 #hasil_cari_geocoding {
@@ -317,6 +373,7 @@ body {
     background-color: #fff;
     border-bottom: 1px solid #ddd;
     font-size: smaller;
+    background-color: #eee;
 }
 
 .collapsible-body {
@@ -635,8 +692,8 @@ li.collection-item:hover {
 
 input[type=range]+.thumb.active .value {
     color: #fff;
-    margin-left: -2px;
-    margin-top: -6px;
+    /* margin-left: -2px;
+    margin-top: -6px; */
     font-size: 12px
 }
 
@@ -784,8 +841,20 @@ input[type=range]+.thumb.active .value {
     position: absolute;
     /* width: 48px; */
     /* height: 48px; */
-    top: 80px;
-    left: 7px;
+    bottom: 150px;
+    right: 8px;
+    transition: bottom 0.5s;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+#ukuran {
+    position: absolute;
+    /* width: 48px; */
+    /* height: 48px; */
+    bottom: 250px;
+    right: 8px;
+    transition: bottom 0.5s;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 #zoomextentbtn {
@@ -826,6 +895,10 @@ input[type=range]+.thumb.active .value {
 }
 
 #ext_wms_item_list {
+    font-size: smaller;
+}
+
+#wms_item_list {
     font-size: smaller;
 }
 
