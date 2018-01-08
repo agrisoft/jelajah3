@@ -10,6 +10,7 @@ var map_div = "jelajah_map";
 var layer = [];
 var raw_local_wms;
 var raw_out_wms;
+var raw_out_wms_url;
 var ext_srv;
 var basemaps;
 var basemap = [];
@@ -38,6 +39,9 @@ var box_ukur_visible = false;
 var start_measure = false;
 var listgeocoding = false;
 var cari_val;
+var exturl_val, exturl_type;
+var simpul_val, simpul_type, simpul_text;
+var photos;
 
 // Functions
 function getSimpulInfo() {
@@ -218,6 +222,24 @@ function layerOpa(layerid, opacity) {
     opafrac = opacity / 100;
     layer[layerid].setOpacity(opafrac);
 };
+
+function wrapLon(value) {
+    var worlds = Math.floor((value + 180) / 360);
+    return value - (worlds * 360);
+}
+
+function onMoveEnd(evt) {
+    var map = evt.map;
+    var extent = map.getView().calculateExtent(map.getSize());
+    var bottomLeft = ol.proj.transform(ol.extent.getBottomLeft(extent),
+        'EPSG:3857', 'EPSG:4326');
+    var topRight = ol.proj.transform(ol.extent.getTopRight(extent),
+        'EPSG:3857', 'EPSG:4326');
+    console.log('left', wrapLon(bottomLeft[0]), 'bottom', bottomLeft[1], wrapLon(topRight[0]), topRight[1]);
+    if (photosmodal_stat) {
+        getPhotos(wrapLon(bottomLeft[0]), bottomLeft[1], wrapLon(topRight[0]), topRight[1]);
+    }
+}
 
 function handleFileSelect(evt) {
     console.log(evt)
@@ -660,6 +682,62 @@ function getBasemaps() {
     })
 }
 
+function getPhotos(minx, miny, maxx, maxy) {
+    $(".photosmodal").empty();
+    $.ajax({
+        url: palapa_api_url + "photos/query?minx=" + minx + "&miny=" + miny + "&maxx=" + maxx + "&maxy=" + maxy,
+        async: true,
+        success: function(data) {
+            console.log(data);
+            photosSource.clear();
+            for (i = 0; i < data.length; i++) {
+                var feature = new ol.Feature(data[i]);
+                feature.set('nama', data[i].nama);
+                var coordinate = [parseFloat(data[i].lon), parseFloat(data[i].lat)];
+                var geometry = new ol.geom.Point(ol.proj.fromLonLat(coordinate, 'EPSG:3857'));
+                feature.setGeometry(geometry);
+                photosSource.addFeature(feature);
+                photos_html = "<div id='photo_" + data[i].id + "'><div class='card photoscard'><div class='card-image'><img style='height:85px; width: auto;' src='data:image/jpeg;base64," + data[i].photo + "'/><span id='photo_" + data[i].id + "' class='card-title basemap'>" + data[i].nama + "</span></div></div></div></div>";
+                $(".photosmodal").append(photos_html);
+            }
+        }
+    })
+}
+
+function getPhotobyid(photoid) {
+    $.ajax({
+        url: palapa_api_url + "photos/id?id=" + photoid,
+        async: true,
+        success: function(data) {
+            console.log(data);
+            var coordinate = [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+            console.log(ol.proj.fromLonLat(coordinate, 'EPSG:3857'));
+            var merc_coordinate = ol.proj.fromLonLat(coordinate, 'EPSG:3857');
+            var geometry = new ol.geom.Point(ol.proj.fromLonLat(coordinate, 'EPSG:3857'));
+            $('#popup-content').empty();
+            var tabel_info_head = "<table class='highlight'><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody id='isiinfo'></tbody></table>";
+            $('#popup-content').append(tabel_info_head)
+            $.each(data[0], function(k, v) {
+                if (k != 'geometry') {
+                    if (photosmodal_stat) {
+                        if (k == 'photo') {
+                            content_html = "<tr><td>" + data[0].nama + "</td><td><img style='width: 250px;' src='data:image/jpeg;base64," + data[0].photo + "'/></td></tr>";
+                        } else {
+                            content_html = "<tr><td>" + k + "</td><td>" + v + "</td></tr>";
+                        }
+                    } else {
+                        content_html = "<tr><td>" + k + "</td><td>" + v + "</td></tr>";
+                    }
+                    $('#isiinfo').append(content_html)
+                }
+            });
+            $('#popup-content').append(content_html)
+            overlay.setPosition(merc_coordinate);
+        }
+    })
+}
+
+
 // Custom control
 
 // Init map
@@ -735,7 +813,25 @@ var draw_vector = new ol.layer.Vector({
     zIndex: 666666
 });
 
-var default_layers = [layer_osm, layer_rbi, layer_esri, layer_rbibaru, draw_vector];
+var photosSource = new ol.source.Vector();
+var photosstyle = new ol.style.Style({
+    image: new ol.style.Circle({
+        radius: 6,
+        stroke: new ol.style.Stroke({
+            color: 'white',
+            width: 2
+        }),
+        fill: new ol.style.Fill({
+            color: 'green'
+        })
+    })
+});
+var photoslayer = new ol.layer.Vector({
+    source: photosSource,
+    style: photosstyle
+});
+
+var default_layers = [layer_osm, layer_rbi, layer_esri, layer_rbibaru, draw_vector, photoslayer];
 
 closer.onclick = function() {
     overlay.setPosition(undefined);
@@ -768,6 +864,8 @@ var map = new ol.Map({
 });
 
 map.getView().fit(merc_extent, map.getSize());
+
+map.on('moveend', onMoveEnd);
 
 map.on('singleclick', function(evt) {
     var coordinate = evt.coordinate;
@@ -820,7 +918,15 @@ map.on('singleclick', function(evt) {
                 if (fkeys[i] != 'geometry') {
                     // content_html = "<p>" + fkeys[i] + ": " + feature.get(fkeys[i]) + "</p>";
                     // $('#popup-content').append(content_html)
-                    content_html = "<tr><td>" + fkeys[i] + "</td><td>" + feature.get(fkeys[i]) + "</td></tr>";
+                    if (photosmodal_stat) {
+                        if (fkeys[i] == 'photo') {
+                            content_html = "<tr><td>" + fkeys[i] + "</td><td><img style='width: 250px;' src='data:image/jpeg;base64," + feature.get(fkeys[i]) + "'/></td></tr>";
+                        } else {
+                            content_html = "<tr><td>" + fkeys[i] + "</td><td>" + feature.get(fkeys[i]) + "</td></tr>";
+                        }
+                    } else {
+                        content_html = "<tr><td>" + fkeys[i] + "</td><td>" + feature.get(fkeys[i]) + "</td></tr>";
+                    }
                     $('#isiinfo').append(content_html)
                 }
             }
@@ -875,7 +981,7 @@ function getInfo(evt, layer) {
 
 // Init UI Controls
 
-var basemapbox = "<div class='basemapbox'><span class='basemapbtn'><i class='material-icons lrbox'>perm_media</i> Basemap</span><span class='photos' style='display:none;'><i class='material-icons lrbox'>photo_camera</i> Foto</span></div>";
+var basemapbox = "<div class='basemapbox'><span class='basemapbtn'><i class='material-icons lrbox'>perm_media</i> Basemap</span><span class='photos'><i class='material-icons lrbox'>photo_camera</i> Foto</span></div>";
 var basemapmodal = "<div class='basemapmodal'><div id='base_osm'><div class='card basemapcard'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>OSM</span></div></div></div><div id='base_rbi'><div class='card basemapcard'><div class='card-image'><img src='images/rbi.png'><span class='card-title basemap'>RBI</span></div></div></div><div id='base_esri'><div class='card basemapcard'><div class='card-image'><img src='images/esri_i.png'><span class='card-title basemap'>ESRI</span></div></div></div><div id='base_rbibaru'><div class='card basemapcard'><div class='card-image'><img src='images/rbios.png'><span class='card-title basemap'>RBI OS</span></div></div></div></div>";
 var photosmodal = "<div class='photosmodal'></div>";
 var cari_geocoding = "<div class='cari_geocoding'></div>";
@@ -887,8 +993,12 @@ var leftsidebar = "<div class='leftsidebar'><span class='daftarlayer'>Daftar Lay
 var layerwindow = "<div id='layerwindow'><div id='layerwindowheader'>Tambah Layer <i class='material-icons layerwindowclose right'>close</i></div><div id='layerwindowcontent'><ul class='tabs' id='addlayerstab'><li class='tab col s3'><a class='active'  href='#locallayer'>Dataset</a></li><li class='tab col s3'><a href='#simpul'>Simpul</a></li><li class='tab col s3'><a href='#localfiles'>File</a></li><li class='tab col s3'><a href='#extlayer'>URL</a></li></ul><div id='tabsubheader'></div><div class='col s12 grey lighten-4 addlayercontentpad' id='locallayer'></div><div class='col s12 grey lighten-4 addlayercontentpad' id='extlayer'><ul class='collection' id='wms_item_list'></ul></div><div class='col s12 grey lighten-4 addlayercontentpad' id='localfiles'><div id='dropzone'></div></div><div class='col s12 white addlayercontentpad' id='simpul'><div class='col s2' id='ext_srv_t'></div><div class='col s2' id='ext_srv_url' style='display:none;'></div><div class='col s12'><ul class='collection' id='ext_wms_item_list'></ul></div></div></div></div>";
 var layerwindow_lokal = "<ul class='collapsible' data-collapsible='expandable' id='layerwindow_lokal'></ul>";
 var tablayerlokal = "<div class='input-field col s12 textinputnolab'><input placeholder='Cari layer ...' id='layername_lokal' type='text' class='validate tabsub' style='margin:0px;'/></div>";
-var tablayersimpul = "<div class='input-field col s12 textinputnolab'><select id='ext_srv_type'><option disable='' selected='selected' value='WMS'>Pilih Servis</option></select></div>";
-var tablayerurl = "<div class='input-field col s12 textinputnolab' style='padding: 0px;'><div class='row'><div class='col s12 taburl'><div class='row' style='margin-bottom: 0px !important;'><div class='input-field col s12 textinputnolab' style='padding: 0px;'><input class='validate' style='margin-bottom: 0px;' id='url_servis' placeholder='URL servis' type='text'/></div></div></div></div><div class='row'><div class='input-field col s8 textinputnolab'><select id='srv_type'><option disable='' selected='selected' value='WMS'>OGC WMS</option><option value='ESRI'>ESRI REST</option></select></div><div class='col s4 textinputnolab'><a class='waves-effect waves-light btn' id='getwmslist'>Ambil List</a></div></div></div>";
+var tablayersimpul = "<div class='input-field col s12 textinputnolab'><select id='ext_srv_type' name='ext_srv_type'><option disable='' selected='selected' value='WMS'>Pilih Servis</option></select></div>";
+if (embedded) {
+    var tablayerurl = "<div class='input-field col s12 textinputnolab' style='padding: 0px;'><div class='row' style='margin-left:15px;margin-right:15px'><div class='col s12 taburl'><div class='row' style='margin-bottom: 0px !important;'><div class='input-field col s12 textinputnolab' style='padding: 0px;'><input class='validate' style='margin-bottom: 0px;' id='url_servis' placeholder='URL servis' type='text'/></div></div></div></div><div class='row' style='margin-left:15px;margin-right:15px;'><div class='input-field col s8 textinputnolab'><select id='srv_type'><option disable='' selected='selected' value='WMS'>OGC WMS</option><option value='ESRI'>ESRI REST</option></select></div><div class='col s4 textinputnolab'><a class='waves-effect waves-light btn' id='getwmslist'>Ambil List</a></div></div></div>";
+} else {
+    var tablayerurl = "<div class='input-field col s12 textinputnolab' style='padding: 0px;'><div class='row'><div class='col s12 taburl'><div class='row' style='margin-bottom: 0px !important;'><div class='input-field col s12 textinputnolab' style='padding: 0px;'><input class='validate' style='margin-bottom: 0px;' id='url_servis' placeholder='URL servis' type='text'/></div></div></div></div><div class='row'><div class='input-field col s8 textinputnolab'><select id='srv_type'><option disable='' selected='selected' value='WMS'>OGC WMS</option><option value='ESRI'>ESRI REST</option></select></div><div class='col s4 textinputnolab'><a class='waves-effect waves-light btn' id='getwmslist'>Ambil List</a></div></div></div>";
+}
 var box_ukur = "<div id='box_ukur'><div class='input-field'><select id='select_ukur'><option value='' disabled selected>Pilih pengukuran</option><option value='1'>Panjang</option><option value='2'>Luas</option></select><label>Geometri</label></div><div id='panjang' class='input-field' style='display:none;'><select id='satuan_panjang'><option value=0 disabled selected>Satuan</option><option value=1>Meter (m)</option><option value=2>Kilometer (km)</option><option value=3>Mil</option></select><label>Satuan</label></div><div id='luas' class='input-field' style='display:none;'><select id='satuan_luas'><option value=0 disabled selected>Satuan</option><option value=4>Meter Persegi (m2)</option><option value=5>Kilometer Persegi (km2)</option><option value=6>Mil Persegi</option></select><label>Satuan</label></div></div>";
 
 $("#jelajah").append(basemapbox);
@@ -950,6 +1060,12 @@ function layertabswitch(tab) {
             $('#ext_srv_type').append(item_html);
             extChanged();
         }
+        if (simpul_val) {
+            console.log(simpul_type, simpul_val, simpul_text);
+            $("#ext_srv_type").val(simpul_val);
+            // $("#srv_type").val(simpul_type);
+            // $("[name=ext_srv_type]").text(simpul_text);
+        }
         $('select').material_select();
     }
     if (tab == 'URL') {
@@ -957,6 +1073,11 @@ function layertabswitch(tab) {
         $("#tabsubheader").empty();
         $("#tabsubheader").append(tablayerurl);
         getwmslist();
+        if (exturl_val) {
+            console.log(exturl_type, exturl_val);
+            $("#url_servis").val(exturl_val);
+            $("#srv_type").val(exturl_type);
+        }
         $('select').material_select();
     }
     if (tab == 'File') {
@@ -973,7 +1094,10 @@ function basemapstoggle() {
         $(".basemapmodal").css('height', '100px');
         $(".photosmodal").css('height', '0px');
         basemapmodal_stat = true;
-        if (photosmodal_stat) { photosmodal_stat = false; }
+        if (photosmodal_stat) {
+            photosSource.clear();
+            photosmodal_stat = false;
+        }
     } else {
         $(".ol-zoom").css('bottom', '5em');
         $("#zoomextent").css('bottom', '150px');
@@ -991,6 +1115,12 @@ function photostoggle() {
         $(".photosmodal").css('height', '100px');
         $(".basemapmodal").css('height', '0px');
         photosmodal_stat = true;
+        var extent = map.getView().calculateExtent(map.getSize());
+        var bottomLeft = ol.proj.transform(ol.extent.getBottomLeft(extent),
+            'EPSG:3857', 'EPSG:4326');
+        var topRight = ol.proj.transform(ol.extent.getTopRight(extent),
+            'EPSG:3857', 'EPSG:4326');
+        getPhotos(wrapLon(bottomLeft[0]), bottomLeft[1], wrapLon(topRight[0]), topRight[1]);
         if (basemapmodal_stat) {
             basemapmodal_stat = false;
         }
@@ -999,6 +1129,7 @@ function photostoggle() {
         $("#zoomextent").css('bottom', '150px');
         $(".basemapbox").css('bottom', '35px')
         $(".photosmodal").css('height', '0px');
+        photosSource.clear();
         photosmodal_stat = false;
     }
 }
@@ -1213,6 +1344,15 @@ $(".basemapmodal").on('click', function(e) {
     switchbaselayer(base_id);
 })
 
+$(".photosmodal").on('click', function(e) {
+    base_id = $(e.target).siblings().attr('id');
+    console.log($(e.target).siblings().attr('id').split('_')[1]);
+    getPhotobyid(base_id.split('_')[1]);
+    // overlay.setPosition(coordinate);
+    // switchbaselayer(base_id);
+})
+
+
 function list_hasil_event() {
     $("#list_hasil").on('click', function(e) {
         p_id = $(e.target).attr('id');
@@ -1292,6 +1432,8 @@ function getwmslist() {
     $('#getwmslist').on('click', function() {
         srv_type = $('#srv_type').val();
         srv_url = $('#url_servis').val();
+        window.exturl_val = srv_url;
+        window.exturl_type = srv_type;
         console.log('CLICKED', srv_type, srv_url);
         if (srv_type == 'WMS') {
             function getWMSdata() {
@@ -1303,7 +1445,7 @@ function getwmslist() {
                         wmscap = new WMSCapabilities().parse(wmscapobj);
                         console.log(wmscap)
                         wmslayerlist = wmscap.Capability.Layer.Layer;
-                        window.raw_out_wms = wmslayerlist;
+                        window.raw_out_wms_url = wmslayerlist;
                         console.log(wmslayerlist)
                         $('#wms_item_list').empty();
                         for (i = 0; i < wmslayerlist.length; i++) {
@@ -1346,23 +1488,23 @@ $('#wms_item_list').on('click', function(e) {
             p_id = $(e.target).closest('li').attr('id');
         }
         var min_x, min_y, max_x, max_y, layer_nativename;
-        for (i = 0; i < raw_out_wms.length; i++) {
+        for (i = 0; i < raw_out_wms_url.length; i++) {
             // console.log(raw_local_wms[i].layer_nativename)
             try {
-                if (raw_out_wms[i].Name.indexOf(p_id) >= 0) {
-                    min_x = raw_out_wms[i].EX_GeographicBoundingBox[0];
-                    min_y = raw_out_wms[i].EX_GeographicBoundingBox[1];
-                    max_x = raw_out_wms[i].EX_GeographicBoundingBox[2];
-                    max_y = raw_out_wms[i].EX_GeographicBoundingBox[3];
-                    layer_nativename = raw_out_wms[i].Name;
+                if (raw_out_wms_url[i].Name.indexOf(p_id) >= 0) {
+                    min_x = raw_out_wms_url[i].EX_GeographicBoundingBox[0];
+                    min_y = raw_out_wms_url[i].EX_GeographicBoundingBox[1];
+                    max_x = raw_out_wms_url[i].EX_GeographicBoundingBox[2];
+                    max_y = raw_out_wms_url[i].EX_GeographicBoundingBox[3];
+                    layer_nativename = raw_out_wms_url[i].Name;
                 }
             } catch (error) {
                 // if (raw_out_wms[i].Title.indexOf(p_id) >= 0) {
-                min_x = raw_out_wms[i].EX_GeographicBoundingBox[0];
-                min_y = raw_out_wms[i].EX_GeographicBoundingBox[1];
-                max_x = raw_out_wms[i].EX_GeographicBoundingBox[2];
-                max_y = raw_out_wms[i].EX_GeographicBoundingBox[3];
-                layer_nativename = raw_out_wms[i].Title;
+                min_x = raw_out_wms_url[i].EX_GeographicBoundingBox[0];
+                min_y = raw_out_wms_url[i].EX_GeographicBoundingBox[1];
+                max_x = raw_out_wms_url[i].EX_GeographicBoundingBox[2];
+                max_y = raw_out_wms_url[i].EX_GeographicBoundingBox[3];
+                layer_nativename = raw_out_wms_url[i].Title;
                 // }    
             }
         }
@@ -1399,6 +1541,9 @@ function extChanged() {
             if (ext_srv[i].url == $("#ext_srv_type").val()) {
                 if (ext_srv[i].type == 'OGC WMS') { tipe = 'WMS' } else { tipe = 'ESRI' };
                 $("#ext_srv_t").text(ext_srv[i].type);
+                window.simpul_val = $("#ext_srv_type").val();
+                window.simpul_type = tipe;
+                window.simpul_text = ext_srv[i].name;
                 if (tipe == 'WMS') {
                     function getWMSdata() {
                         wmscapurl = ext_srv[i].url + '?service=wms&request=GetCapabilities';
@@ -1410,7 +1555,6 @@ function extChanged() {
                                 wmslayerlist = wmscap.Capability.Layer.Layer;
                                 window.raw_out_wms = wmslayerlist;
                                 console.log(wmslayerlist)
-                                $('#wms_item_list').empty();
                                 for (i = 0; i < wmslayerlist.length; i++) {
                                     item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons ilist2'>add_circle</i> <span class='layermark lilist2' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
                                     $('#ext_wms_item_list').append(item_html);
