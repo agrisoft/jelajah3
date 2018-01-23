@@ -85,9 +85,9 @@ function extToMerc(extent) {
 
 function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, max_y, layer_nativename) {
     // rndlayerid = randomNumber()
-    // if (_proxy) {
-    //     serviceUrl = _proxy + encodeURIComponent(serviceUrl);
-    // }
+    if (_proxy) {
+        serviceUrl = _proxy + encodeURIComponent(serviceUrl);
+    }
     window.layer_count = layer_count + 1;
     rndlayerid = layer_count;
     layer_source[rndlayerid] = new ol.source.TileWMS({
@@ -119,6 +119,43 @@ function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, ma
     }, 1000);
 }
 
+function olAddFrontWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, max_y, layer_nativename, aktif) {
+    // rndlayerid = randomNumber()
+    // if (_proxy) {
+    //     serviceUrl = _proxy + encodeURIComponent(serviceUrl);
+    // }
+    window.layer_count = layer_count + 1;
+    rndlayerid = layer_count;
+    layer_source[rndlayerid] = new ol.source.TileWMS({
+        url: serviceUrl,
+        params: { LAYERS: layername, TILED: true, SRS: 'EPSG:3857' },
+        crossOrigin: 'anonymous'
+    })
+    layer[rndlayerid] = new ol.layer.Tile({
+        title: layermark,
+        tipe: 'WMS',
+        visible: aktif,
+        preload: Infinity,
+        extent: extToMerc([min_x, min_y, max_x, max_y]),
+        source: layer_source[rndlayerid]
+    });
+    map.addLayer(layer[rndlayerid]);
+    console.log(rndlayerid, layermark, layer[rndlayerid].get('title'))
+    setTimeout(() => {
+        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i><span class='layer_name'>" + layer[rndlayerid].get('title') + "</span></div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+        $('#sortableul').prepend(listappend);
+        info_layer.push(rndlayerid);
+        // extent = layer[rndlayerid].getExtent();
+        // map.getView().fit(extent, map.getSize());
+        legend_url = serviceUrl + '?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&legend_options=fontAntiAliasing:true&LAYER=' + layer_nativename;
+        legend_html = "<img src='" + legend_url + "'>";
+        $('#wmslegend_' + rndlayerid).append(legend_html);
+        layer_index.push(rndlayerid);
+        layer[rndlayerid].setZIndex(layer.length);
+    }, 1000);
+}
+
+
 function olAddDEFLayer(layername, layermark, layer_nativename, aktif, min_x, min_y, max_x, max_y) {
     setTimeout(() => {
         console.log(layername, layermark, layer_nativename, aktif, min_x, min_y, max_x, max_y)
@@ -141,10 +178,10 @@ function olAddDEFLayer(layername, layermark, layer_nativename, aktif, min_x, min
         map.addLayer(layer[rndlayerid]);
         console.log(rndlayerid, layermark, layer[rndlayerid].get('title'))
         if (aktif) {
-            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i><span class='layer_name'>" + layer[rndlayerid].get('title') + "</span></div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
             $('#sortableul').prepend(listappend);
         } else {
-            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box_outline_blank</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box_outline_blank</i><span class='layer_name'>" + layer[rndlayerid].get('title') + "</span></div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>aspect_ratio</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
             $('#sortableul').prepend(listappend);
             layer[rndlayerid].setVisible(false);
         }
@@ -625,7 +662,11 @@ function switchbaselayer(basetitle) {
                 isit = false;
                 default_layers[i].setVisible(false);
             }
-            console.log(basetitle, default_layers[i].get('title'), isit)
+            console.log(basetitle, default_layers[i].get('title'), isit);
+            if (photosmodal_stat) {
+                photoslayer.setVisible('true');
+            }
+            draw_vector.setVisible('true');
         }
     }, 500);
 }
@@ -737,6 +778,14 @@ function getPhotobyid(photoid) {
     })
 }
 
+function findIndexInData(data, property, value) {
+    for (var i = 0, l = data.length; i < l; i++) {
+        if (data[i][property] === value) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 // Custom control
 
@@ -776,10 +825,13 @@ var layer_rbibaru = new ol.layer.Tile({
     title: 'RBI OS',
     visible: false,
     preload: Infinity,
-    source: new ol.source.TileWMS({
-        url: 'http://202.4.179.123:8080/geoserver/gwc/service/wms',
-        params: { LAYERS: 'basemap_rbi:basemap', VERSION: '1.1.1' }
+    source: new ol.source.XYZ({
+        url: 'http://basemap.big.go.id/geoserver/gwc/service/tms/1.0.0/basemap_rbi:basemap@EPSG:3857@png/{z}/{x}/{-y}.png'
     }),
+    // source: new ol.source.TileWMS({
+    //     url: 'http://202.4.179.123:8080/geoserver/gwc/service/wms',
+    //     params: { LAYERS: 'basemap_rbi:basemap', VERSION: '1.1.1' }
+    // }),
     zIndex: -10
 });
 
@@ -827,8 +879,10 @@ var photosstyle = new ol.style.Style({
     })
 });
 var photoslayer = new ol.layer.Vector({
+    title: 'Photos',
     source: photosSource,
-    style: photosstyle
+    style: photosstyle,
+    zIndex: 10000
 });
 
 var default_layers = [layer_osm, layer_rbi, layer_esri, layer_rbibaru, draw_vector, photoslayer];
@@ -957,6 +1011,11 @@ function getInfo(evt, layer) {
                 url: url,
                 async: false,
                 success: function(data) {
+                    try {
+                        data = JSON.parse(decodeURIComponent(data))
+                    } catch (error) {
+                        //
+                    }
                     infos = data.features[0].properties;
                     for (var key in infos) {
                         var value = infos[key];
@@ -1121,6 +1180,7 @@ function photostoggle() {
         var topRight = ol.proj.transform(ol.extent.getTopRight(extent),
             'EPSG:3857', 'EPSG:4326');
         getPhotos(wrapLon(bottomLeft[0]), bottomLeft[1], wrapLon(topRight[0]), topRight[1]);
+        photoslayer.setVisible('true');
         if (basemapmodal_stat) {
             basemapmodal_stat = false;
         }
@@ -1769,6 +1829,26 @@ setTimeout(() => {
     }
 
 }, 1000);
+
+function getFrontlayers() {
+    $.ajax({
+        url: palapa_api_url + "front_layers",
+        async: false,
+        success: function(data) {
+            console.log(data);
+            for (i = 0; i < data.length; i++) {
+                // layeritem = {};
+                rawlayerid = findIndexInData(raw_local_wms, 'layer_nativename', data[i]['layer_nativename']);
+                layeritem = raw_local_wms[rawlayerid];
+                aktif = data[i]['aktif']
+                console.log(local_gs, layeritem['layer_name'], layeritem['layer_nativename'], layeritem['layer_minx'], layeritem['layer_miny'], layeritem['layer_maxx'], layeritem['layer_maxy'], layeritem['layer_nativename'], aktif);
+                olAddDEFLayer(layeritem['layer_nativename'], layeritem['layer_name'], layeritem['layer_nativename'], aktif, layeritem['layer_minx'], layeritem['layer_miny'], layeritem['layer_maxx'], layeritem['layer_maxy'])
+                    // olAddFrontWMSLayer(local_gs, layeritem['layer_name'], layeritem['layer_id'], layeritem['layer_minx'], layeritem['layer_miny'], layeritem['layer_maxx'], layeritem['layer_maxy'], layeritem['layer_nativename'], aktif);
+            }
+        }
+    })
+}
+getFrontlayers();
 
 // DOC READY
 
